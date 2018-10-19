@@ -15,11 +15,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.common.Slf4jNotifier;
+import com.github.tomakehurst.wiremock.core.Options;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.extension.Extension;
 import com.github.tomakehurst.wiremock.stubbing.StubMapping;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import wiremock.com.github.jknack.handlebars.Helper;
+
 import org.springframework.cloud.contract.stubrunner.HttpServerStub;
 import org.springframework.cloud.contract.verifier.builder.handlebars.HandlebarsEscapeHelper;
 import org.springframework.cloud.contract.verifier.builder.handlebars.HandlebarsJsonPathHelper;
@@ -31,7 +34,6 @@ import org.springframework.util.ClassUtils;
 import org.springframework.util.SocketUtils;
 import org.springframework.util.StreamUtils;
 import org.springframework.util.StringUtils;
-import wiremock.com.github.jknack.handlebars.Helper;
 
 /**
  * Abstraction over WireMock as a HTTP Server Stub
@@ -99,7 +101,7 @@ public class WireMockHttpServerStub implements HttpServerStub {
 	public HttpServerStub start() {
 		if (isRunning()) {
 			if (log.isTraceEnabled()) {
-				log.trace("The server is already running at port [" + port() + "]");
+				log.trace("The server is already running at HTTP port [" + port() + "]");
 			}
 			return this;
 		}
@@ -108,16 +110,37 @@ public class WireMockHttpServerStub implements HttpServerStub {
 
 	@Override
 	public HttpServerStub start(int port) {
-		this.wireMockServer = new WireMockServer(
-				config().port(port).notifier(new Slf4jNotifier(true)));
+		return httpServerStub(config().port(port).notifier(new Slf4jNotifier(true)));
+	}
+
+	private HttpServerStub httpServerStub(Options options) {
+		this.wireMockServer = new WireMockServer(options);
+		int port = options.portNumber();
 		this.wireMockServer.start();
 		if (log.isDebugEnabled()) {
-			log.debug("Started WireMock at port [" + port + "]");
+			log.debug("Started WireMock at port [" + port + "]. "
+					+ "Using HTTPS [" + options.httpsSettings().enabled() + "]");
 		}
 		if (!SERVERS.containsKey(this)) {
-			SERVERS.put(this, new PortAndMappings(port, new ArrayList<StubMapping>()));
+			SERVERS.put(this, new PortAndMappings(port, new ArrayList<>()));
 		}
 		return this;
+	}
+
+	@Override
+	public HttpServerStub startHttps() {
+		if (isRunning()) {
+			if (log.isTraceEnabled()) {
+				log.trace("The server is already running at port [" + port() + "]");
+			}
+			return this;
+		}
+		return startHttps(SocketUtils.findAvailableTcpPort());
+	}
+
+	@Override
+	public HttpServerStub startHttps(int port) {
+		return httpServerStub(config().httpsPort(port).notifier(new Slf4jNotifier(true)));
 	}
 
 	@Override

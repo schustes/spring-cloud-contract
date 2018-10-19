@@ -32,6 +32,20 @@ public interface HttpServerStub {
 	HttpServerStub start(int port);
 
 	/**
+	 * Starts the server on a random HTTPS port. Should return itself to allow chaining.
+	 */
+	default HttpServerStub startHttps() {
+		return this;
+	};
+
+	/**
+	 * Starts the server on a given HTTPS port. Should return itself to allow chaining.
+	 */
+	default HttpServerStub startHttps(int port) {
+		return this;
+	};
+
+	/**
 	 * Stops the server. Should return itself to allow chaining.
 	 */
 	HttpServerStub stop();
