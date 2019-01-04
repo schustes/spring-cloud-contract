@@ -655,6 +655,7 @@ class PactContractConverterSpec extends Specification {
 			Collection<Contract> expectedContracts = [
 					Contract.make {
 						label 'message sent to activemq:output'
+						sentTo 'activemq:output'
 						input {
 							triggeredBy('bookReturnedTriggered()')
 						}
