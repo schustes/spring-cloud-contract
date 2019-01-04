@@ -660,6 +660,7 @@ class PactContractConverterSpec extends Specification {
 							triggeredBy('bookReturnedTriggered()')
 						}
 						outputMessage {
+							sentTo 'activemq:output'
 							body([
 								bookName: "foo"
 							])
