@@ -441,10 +441,13 @@ abstract class MethodBodyBuilder {
 		jsonPaths.each {
 			String method = it.method()
 			method = processIfTemplateIsPresent(method, parsedRequestBody)
-			String postProcessedMethod = templateProcessor.containsJsonPathTemplateEntry(method) ?
-					method : postProcessJsonPathCall(method)
-			bb.addLine("assertThatJson(parsedJson)" + postProcessedMethod)
-			addColonIfRequired(bb)
+
+			String postProcessedMethod = templateProcessor.containsJsonPathTemplateEntry(method) ? method : postProcessJsonPathCall(method)
+			if (!postProcessedMethod.contains("isEmpty")) {
+				bb.addLine("assertThatJson(parsedJson)" + postProcessedMethod)
+				addColonIfRequired(bb)
+			}
+
 		}
 		doBodyMatchingIfPresent(bodyMatchers, bb, copiedBody)
 		if (!(convertedResponseBody instanceof Map || convertedResponseBody instanceof List)) {
