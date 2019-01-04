@@ -133,9 +133,8 @@ class MessagingSCContractCreator {
 							}
 						}
 					}
-					if (!message.description.isEmpty()) {
-                                            sentTo(message.description);
-					}
+
+                                        sentTo(guessDestination(message);
 
 				}
 			}
@@ -149,6 +148,14 @@ class MessagingSCContractCreator {
 				.replace('(', '')
 				.replace(')', '')
 				.uncapitalize() + "()"
+	}
+
+	private String guessDestination(Message message) {
+		outcomeParts = message.description.split(' ')
+		if (outcomeParts.length > 0) { 
+			return outcomeParts[outcomeParts.length - 1]		
+		}
+		return ''
 	}
 
 }
