@@ -121,9 +121,6 @@
 					<tag>${project.version}</tag>
 					<username>${env.DOCKER_HUB_USERNAME}</username>
 					<password>${env.DOCKER_HUB_PASSWORD}</password>
-					<build>
-						<noCache>true</noCache>
-					</build>
 				</configuration>
 				<dependencies>
 					<dependency>

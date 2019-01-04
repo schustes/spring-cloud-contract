@@ -4,16 +4,18 @@
 		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
+
 	<parent>
 		<groupId>org.springframework.cloud</groupId>
 		<artifactId>spring-cloud-build</artifactId>
-		<version>2.1.0.BUILD-SNAPSHOT</version>
-		<relativePath/>
+		<version>2.0.2.RELEASE</version>
+		<relativePath>../spring-cloud-build</relativePath>
+
 	</parent>
 
 	<artifactId>spring-cloud-contract-parent</artifactId>
 	<packaging>pom</packaging>
-	<version>2.1.0.BUILD-SNAPSHOT</version>
+	<version>2.1.1-S</version>
 
 	<name>Spring Cloud Contract</name>
 	<description>Spring Cloud Contract</description>
@@ -23,19 +25,16 @@
 	<inceptionYear>2016</inceptionYear>
 
 	<properties>
-		<activemq.version>5.12.1</activemq.version>
-		<camel.version>2.22.1</camel.version>
-		<checkstyle.version>2.17</checkstyle.version>
 		<pact.version>3.5.13</pact.version>
 		<jsch-agent.version>0.0.9</jsch-agent.version>
-		<spring-cloud-build.version>2.1.0.BUILD-SNAPSHOT</spring-cloud-build.version>
-		<spring-cloud-zookeeper.version>2.1.0.BUILD-SNAPSHOT</spring-cloud-zookeeper.version>
-		<spring-cloud-stream.version>Fishtown.BUILD-SNAPSHOT</spring-cloud-stream.version>
-		<spring-cloud-netflix.version>2.1.0.BUILD-SNAPSHOT</spring-cloud-netflix.version>
-		<spring-cloud-consul.version>2.1.0.BUILD-SNAPSHOT</spring-cloud-consul.version>
-		<spring-cloud-commons.version>2.1.0.BUILD-SNAPSHOT</spring-cloud-commons.version>
+		<spring-cloud-build.version>2.0.2.RELEASE</spring-cloud-build.version>
+		<spring-cloud-zookeeper.version>2.0.0.RELEASE</spring-cloud-zookeeper.version>
+		<spring-cloud-stream.version>Elmhurst.SR1</spring-cloud-stream.version>
+		<spring-cloud-netflix.version>2.0.0.RELEASE</spring-cloud-netflix.version>
+		<spring-cloud-consul.version>2.0.1.RELEASE</spring-cloud-consul.version>
+		<spring-cloud-commons.version>2.0.2.RELEASE</spring-cloud-commons.version>
 		<jopt-simple.version>5.0.3</jopt-simple.version>
-		<cglib.version>3.2.9</cglib.version>
+		<cglib.version>3.2.4</cglib.version>
 		<spock-spring.version>1.0-groovy-2.4</spock-spring.version>
 		<spock-global-unroll.version>0.5.1</spock-global-unroll.version>
 		<hoverfly-junit.version>0.2.2</hoverfly-junit.version>
@@ -47,13 +46,16 @@
 		<groovy.version>2.4.15</groovy.version>
 		<!-- For Takari plugin -->
 		<maven.version>3.2.1</maven.version>
-		<aether.version>1.1.0</aether.version>
 	</properties>
 
 	<modules>
-		<module>spring-cloud-contract-dependencies</module>
+<!--
+
 		<module>docs</module>
 		<module>docker</module>
+-->
+		<module>spring-cloud-contract-dependencies</module>
+
 		<module>spring-cloud-contract-shade</module>
 		<module>spring-cloud-contract-wiremock</module>
 		<module>spring-cloud-contract-verifier</module>
@@ -62,8 +64,9 @@
 		<module>spring-cloud-contract-starters</module>
 		<module>spring-cloud-contract-tools</module>
 		<module>spring-cloud-contract-stub-runner-boot</module>
-		<module>tests</module>
+<!--
 		<module>samples</module>
+	-->
 	</modules>
 
 	<dependencyManagement>
@@ -74,51 +77,6 @@
 				<version>${spring-cloud-commons.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.camel</groupId>
-				<artifactId>camel-spring-boot-starter</artifactId>
-				<version>${camel.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.camel</groupId>
-				<artifactId>camel-spring</artifactId>
-				<version>${camel.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.camel</groupId>
-				<artifactId>camel-spring-boot</artifactId>
-				<version>${camel.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.camel</groupId>
-				<artifactId>camel-core</artifactId>
-				<version>${camel.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.camel</groupId>
-				<artifactId>camel-kafka</artifactId>
-				<version>${camel.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.camel</groupId>
-				<artifactId>camel-jackson</artifactId>
-				<version>${camel.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.camel</groupId>
-				<artifactId>camel-jms</artifactId>
-				<version>${camel.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.activemq</groupId>
-				<artifactId>activemq-camel</artifactId>
-				<version>${activemq.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.activemq</groupId>
-				<artifactId>activemq-pool</artifactId>
-				<version>${activemq.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>net.sf.jopt-simple</groupId>
@@ -375,31 +333,6 @@
 				<artifactId>maven-settings-builder</artifactId>
 				<version>${maven.version}</version>
 			</dependency>
-			<dependency>
-				<groupId>org.eclipse.aether</groupId>
-				<artifactId>aether-api</artifactId>
-				<version>${aether.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.aether</groupId>
-				<artifactId>aether-impl</artifactId>
-				<version>${aether.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.aether</groupId>
-				<artifactId>aether-transport-file</artifactId>
-				<version>${aether.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.aether</groupId>
-				<artifactId>aether-transport-http</artifactId>
-				<version>${aether.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.aether</groupId>
-				<artifactId>aether-connector-basic</artifactId>
-				<version>${aether.version}</version>
-			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
@@ -407,11 +340,12 @@
 		<maven>[3.2.1,)</maven>
 	</prerequisites>
 
+	<!--
 	<organization>
 		<name>Spring</name>
 		<url>https://spring.io/</url>
 	</organization>
-
+-->
 	<developers>
 		<developer>
 			<id>mariuszs</id>
@@ -427,11 +361,6 @@
 			<id>dsyer</id>
 			<name>David Syer</name>
 			<email>dsyer@pivotal.io</email>
-		</developer>
-		<developer>
-			<id>OlgaMaciaszek</id>
-			<name>Olga Maciaszek-Sharma</name>
-			<email>omaciaszeksharma@pivotal.io</email>
 		</developer>
 	</developers>
 
@@ -451,6 +380,14 @@
 		<system>CircleCi</system>
 		<url>https://circleci.com/gh/spring-cloud/spring-cloud-contract</url>
 	</ciManagement>
+
+        <distributionManagement>
+        	<repository>
+	                <id>ems</id>
+	                <name>EmsRepo</name>
+	                <url>http://nexus.measurementsolutions.de/content/repositories/plugins </url>
+        	</repository>
+        </distributionManagement>
 
 	<build>
 		<pluginManagement>
@@ -514,112 +451,5 @@
 		</plugins>
 	</reporting>
 
-	<profiles>
-		<profile>
-			<id>spring</id>
-			<repositories>
-				<repository>
-					<id>spring-snapshots</id>
-					<name>Spring Snapshots</name>
-					<url>https://repo.spring.io/libs-snapshot-local</url>
-					<snapshots>
-						<enabled>true</enabled>
-					</snapshots>
-					<releases>
-						<enabled>false</enabled>
-					</releases>
-				</repository>
-				<repository>
-					<id>spring-milestones</id>
-					<name>Spring Milestones</name>
-					<url>https://repo.spring.io/libs-milestone-local</url>
-					<snapshots>
-						<enabled>false</enabled>
-					</snapshots>
-				</repository>
-				<repository>
-					<id>spring-releases</id>
-					<name>Spring Releases</name>
-					<url>https://repo.spring.io/release</url>
-					<snapshots>
-						<enabled>false</enabled>
-					</snapshots>
-				</repository>
-			</repositories>
-			<pluginRepositories>
-				<pluginRepository>
-					<id>spring-snapshots</id>
-					<name>Spring Snapshots</name>
-					<url>https://repo.spring.io/libs-snapshot-local</url>
-					<snapshots>
-						<enabled>true</enabled>
-					</snapshots>
-					<releases>
-						<enabled>false</enabled>
-					</releases>
-				</pluginRepository>
-				<pluginRepository>
-					<id>spring-milestones</id>
-					<name>Spring Milestones</name>
-					<url>https://repo.spring.io/libs-milestone-local</url>
-					<snapshots>
-						<enabled>false</enabled>
-					</snapshots>
-				</pluginRepository>
-				<pluginRepository>
-					<id>spring-releases</id>
-					<name>Spring Releases</name>
-					<url>https://repo.spring.io/libs-release-local</url>
-					<snapshots>
-						<enabled>false</enabled>
-					</snapshots>
-				</pluginRepository>
-			</pluginRepositories>
-		</profile>
-		<profile>
-			<id>sonar</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.jacoco</groupId>
-						<artifactId>jacoco-maven-plugin</artifactId>
-						<version>0.7.7.201606060606</version>
-						<executions>
-							<execution>
-								<id>pre-unit-test</id>
-								<goals>
-									<goal>prepare-agent</goal>
-								</goals>
-								<configuration>
-									<propertyName>surefireArgLine</propertyName>
-									<destFile>${project.build.directory}/jacoco.exec</destFile>
-								</configuration>
-							</execution>
-							<execution>
-								<id>post-unit-test</id>
-								<phase>test</phase>
-								<goals>
-									<goal>report</goal>
-								</goals>
-								<configuration>
-									<!-- Sets the path to the file which contains the execution data. -->
-									<dataFile>${project.build.directory}/jacoco.exec</dataFile>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-surefire-plugin</artifactId>
-						<configuration>
-							<!-- Sets the VM argument line used when unit tests are run. -->
-							<argLine>${surefireArgLine}</argLine>
-							<argLine>${surefireArgLine}</argLine>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
 
 </project>
