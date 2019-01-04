@@ -134,7 +134,7 @@ class MessagingSCContractCreator {
 						}
 					}
 
-                                        sentTo(guessDestination(message);
+                                        sentTo(guessDestination(message));
 
 				}
 			}
@@ -151,7 +151,7 @@ class MessagingSCContractCreator {
 	}
 
 	private String guessDestination(Message message) {
-		outcomeParts = message.description.split(' ')
+		String[] outcomeParts = message.description.split(' ')
 		if (outcomeParts.length > 0) { 
 			return outcomeParts[outcomeParts.length - 1]		
 		}

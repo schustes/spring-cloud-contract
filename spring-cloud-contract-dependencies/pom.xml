@@ -14,13 +14,13 @@ install, comment, then publoish (?)
 	</parent>
 -->
 	<artifactId>spring-cloud-contract-dependencies</artifactId>
-	<version>2.1.1-S</version>
+	<version>2.1.1-T</version>
 	<groupId>org.springframework.cloud</groupId>
 	<packaging>pom</packaging>
 	<name>spring-cloud-contract-dependencies</name>
 	<description>Spring Cloud Contract Dependencies</description>
 	<properties>
-		<wiremock.version>2.19.0</wiremock.version>
+		<wiremock.version>2.20.0</wiremock.version>
 		<jsonassert.version>0.4.13</jsonassert.version>
 		<aether.version>1.1.0</aether.version>
 		<rest-assured.version>3.2.0</rest-assured.version>
