@@ -15,7 +15,7 @@
 
 	<artifactId>spring-cloud-contract-parent</artifactId>
 	<packaging>pom</packaging>
-	<version>2.1.1-T</version>
+	<version>2.1.1-U</version>
 
 	<name>Spring Cloud Contract</name>
 	<description>Spring Cloud Contract</description>
