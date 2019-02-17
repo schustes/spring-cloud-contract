@@ -1,18 +1,19 @@
 /*
- *  Copyright 2013-2018 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
 package org.springframework.cloud.contract.spec.internal
 
 import java.util.regex.Pattern
@@ -21,28 +22,47 @@ import groovy.transform.Canonical
 import groovy.transform.CompileStatic
 import groovy.transform.EqualsAndHashCode
 import groovy.transform.ToString
+
 /**
  * Matching strategy of dynamic parts of the body.
  *
  * @author Marcin Grzejszczak
+ * @author Olga Maciaszek-Sharma
  * @since 1.0.3
  */
-@CompileStatic
 @ToString(includeFields = true, includePackage = false)
 class BodyMatchers {
 	private final RegexPatterns regexPatterns = new RegexPatterns()
-	protected final List<BodyMatcher> jsonPathRegexMatchers = []
+	protected final List<BodyMatcher> matchers = []
 
 	void jsonPath(String path, MatchingTypeValue matchingType) {
-		this.jsonPathRegexMatchers << new JsonPathBodyMatcher(path, matchingType)
+		this.matchers << new PathBodyMatcher(path, matchingType)
+	}
+
+	/**
+	 * Adds xPath matcher; even though same implementation as in {@link BodyMatchers#jsonPath(java.lang.String, org.springframework.cloud.contract.spec.internal.MatchingTypeValue)},
+	 * added for logical coherence in xml
+	 * @param xPath the xPath used to find the element to match
+	 * @param matchingTypeValue to match the element found by the xPath against
+	 */
+	void xPath(String xPath, MatchingTypeValue matchingTypeValue) {
+		matchers << new PathBodyMatcher(xPath, matchingTypeValue)
+	}
+
+	/**
+	 * @deprecated use{@link #matchers()}
+	 */
+	@Deprecated
+	List<BodyMatcher> jsonPathMatchers() {
+		return matchers()
 	}
 
 	boolean hasMatchers() {
-		return !this.jsonPathRegexMatchers.empty
+		return !this.matchers.empty
 	}
 
-	List<BodyMatcher> jsonPathMatchers() {
-		return this.jsonPathRegexMatchers
+	List<BodyMatcher> matchers() {
+		return this.matchers
 	}
 
 	MatchingTypeValue byDate() {
@@ -54,7 +74,8 @@ class BodyMatchers {
 	}
 
 	MatchingTypeValue byTimestamp() {
-		return new MatchingTypeValue(MatchingType.TIMESTAMP, this.regexPatterns.isoDateTime())
+		return new MatchingTypeValue(MatchingType.TIMESTAMP, this.regexPatterns.
+				isoDateTime())
 	}
 
 	RegexMatchingTypeValue byRegex(String regex) {
@@ -83,52 +104,26 @@ class BodyMatchers {
 	}
 
 	boolean equals(o) {
-		if (this.is(o)) return true
-		if (this.getClass() != o.class) return false
+		if (this.is(o)) {
+			return true
+		}
+		if (this.getClass() != o.class) {
+			return false
+		}
 		BodyMatchers that = (BodyMatchers) o
-		List<BodyMatcher> thisMatchers = this.jsonPathRegexMatchers
-		List<BodyMatcher> thatMatchers = that.jsonPathRegexMatchers
-		if (thisMatchers.size() != thatMatchers.size()) return false
-		if (new HashSet<>(thisMatchers) != new HashSet(thatMatchers)) return false
+		List<BodyMatcher> thisMatchers = this.matchers
+		List<BodyMatcher> thatMatchers = that.matchers
+		if (thisMatchers.size() != thatMatchers.size()) {
+			return false
+		}
+		if (new HashSet<>(thisMatchers) != new HashSet(thatMatchers)) {
+			return false
+		}
 		return true
 	}
 
 	int hashCode() {
-		return (this.jsonPathRegexMatchers != null ? this.jsonPathRegexMatchers.hashCode() : 0)
-	}
-}
-
-@ToString(includePackage = false)
-@EqualsAndHashCode
-@Canonical
-@CompileStatic
-class JsonPathBodyMatcher implements BodyMatcher {
-	String jsonPath
-	MatchingTypeValue matchingTypeValue
-
-	@Override
-	MatchingType matchingType() {
-		return this.matchingTypeValue.type
-	}
-
-	@Override
-	String path() {
-		return this.jsonPath
-	}
-
-	@Override
-	Object value() {
-		return this.matchingTypeValue.value
-	}
-
-	@Override
-	Integer minTypeOccurrence() {
-		return this.matchingTypeValue.minTypeOccurrence
-	}
-
-	@Override
-	Integer maxTypeOccurrence() {
-		return this.matchingTypeValue.maxTypeOccurrence
+		return (this.matchers != null ? this.matchers.hashCode() : 0)
 	}
 }
 
@@ -192,7 +187,6 @@ class RegexMatchingTypeValue extends MatchingTypeValue {
  */
 @Canonical
 @ToString(includePackage = false)
-@EqualsAndHashCode
 class MatchingTypeValue {
 	MatchingType type
 

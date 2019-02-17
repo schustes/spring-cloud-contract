@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xmlns="http://maven.apache.org/POM/4.0.0"
 		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
@@ -64,6 +65,10 @@
 		<dependency>
 			<groupId>com.toomuchcoding.jsonassert</groupId>
 			<artifactId>jsonassert</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.rackspace.eclipse.webtools.sourceediting</groupId>
+			<artifactId>org.eclipse.wst.xml.xpath2.processor</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.codehaus.groovy</groupId>
@@ -187,11 +192,10 @@
 			<version>2.1</version>
 			<scope>test</scope>
 		</dependency>
-
 		<dependency>
-		    <groupId>org.apache.camel</groupId>
-		    <artifactId>camel-spring-boot</artifactId>
-		    <version>2.23.0</version>
+			<groupId>xerces</groupId>
+			<artifactId>xercesImpl</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 	<build>

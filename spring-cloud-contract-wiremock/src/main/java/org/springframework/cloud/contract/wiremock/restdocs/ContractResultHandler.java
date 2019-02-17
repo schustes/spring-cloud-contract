@@ -55,7 +55,6 @@ import wiremock.org.eclipse.jetty.util.MultiPartInputStreamParser;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
-import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultHandler;
 
@@ -71,6 +70,11 @@ import static wiremock.com.google.common.collect.FluentIterable.from;
 import static wiremock.com.google.common.collect.Lists.newArrayList;
 import static wiremock.com.google.common.io.ByteStreams.toByteArray;
 
+/**
+ * Converts a {@link MvcResult} to a WireMock response.
+ *
+ * @author Dave Syer
+ */
 public class ContractResultHandler extends
 		WireMockVerifyHelper<MvcResult, ContractResultHandler> implements ResultHandler {
 
@@ -79,7 +83,6 @@ public class ContractResultHandler extends
 	@Override
 	public void handle(MvcResult result) throws Exception {
 		configure(result);
-		MockMvcRestDocumentation.document(getName()).handle(result);
 	}
 
 	@Override
@@ -133,6 +136,7 @@ public class ContractResultHandler extends
 				.getBody();
 		return body != null ? body : new byte[0];
 	}
+
 }
 
 // COPIED FROM WIREMOCK

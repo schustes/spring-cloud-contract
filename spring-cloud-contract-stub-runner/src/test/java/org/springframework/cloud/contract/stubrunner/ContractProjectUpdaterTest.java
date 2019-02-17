@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -23,10 +23,10 @@ import org.assertj.core.api.BDDAssertions;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand;
 import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+
 import org.springframework.boot.test.rule.OutputCapture;
 import org.springframework.cloud.contract.stubrunner.spring.StubRunnerProperties;
 
@@ -37,6 +37,9 @@ import static org.assertj.core.api.BDDAssertions.then;
  */
 public class ContractProjectUpdaterTest extends AbstractGitTest {
 
+	@Rule
+	public OutputCapture outputCapture = new OutputCapture();
+
 	File originalProject;
 
 	File project;
@@ -46,9 +49,6 @@ public class ContractProjectUpdaterTest extends AbstractGitTest {
 	GitRepo gitRepo;
 
 	File origin;
-
-	@Rule
-	public OutputCapture outputCapture = new OutputCapture();
 
 	@Before
 	public void setup() throws Exception {
@@ -85,8 +85,8 @@ public class ContractProjectUpdaterTest extends AbstractGitTest {
 		BDDAssertions.then(new File(this.project,
 				"META-INF/com.example/hello-world/0.0.2/mappings/someMapping.json"))
 				.exists();
-		BDDAssertions.then(gitRepo.gitFactory.provider).isNull();
-		BDDAssertions.then(outputCapture.toString())
+		BDDAssertions.then(this.gitRepo.gitFactory.provider).isNull();
+		BDDAssertions.then(this.outputCapture.toString())
 				.contains("No custom credentials provider will be set");
 	}
 
@@ -119,7 +119,7 @@ public class ContractProjectUpdaterTest extends AbstractGitTest {
 		BDDAssertions.then(new File(this.project,
 				"META-INF/com.example/hello-world/0.0.2/mappings/someMapping.json"))
 				.exists();
-		BDDAssertions.then(outputCapture.toString()).contains(
+		BDDAssertions.then(this.outputCapture.toString()).contains(
 				"Passed username and password - will set a custom credentials provider");
 	}
 
@@ -147,18 +147,24 @@ public class ContractProjectUpdaterTest extends AbstractGitTest {
 		BDDAssertions.then(new File(this.project,
 				"META-INF/com.example/hello-world/0.0.2/mappings/someMapping.json"))
 				.exists();
-		BDDAssertions.then(outputCapture.toString()).contains(
+		BDDAssertions.then(this.outputCapture.toString()).contains(
 				"Passed username and password - will set a custom credentials provider");
 	}
 
 	@Test
 	public void should_not_push_changes_to_current_branch_when_no_changes_were_made()
 			throws Exception {
+		String initialCommit;
+		try (Git git = openGitProject(this.origin)) {
+			RevCommit revCommit = git.log().call().iterator().next();
+			initialCommit = revCommit.getShortMessage();
+		}
+
 		this.updater.updateContractProject("hello-world", this.origin.toPath());
 
 		try (Git git = openGitProject(this.project)) {
 			RevCommit revCommit = git.log().call().iterator().next();
-			then(revCommit.getShortMessage()).isEqualTo("Initial commit");
+			then(revCommit.getShortMessage()).isEqualTo(initialCommit);
 		}
 		BDDAssertions.then(new File(this.project,
 				"META-INF/com.example/hello-world/0.0.2/mappings/someMapping.json"))

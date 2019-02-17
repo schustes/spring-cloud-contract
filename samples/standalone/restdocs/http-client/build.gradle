@@ -7,7 +7,7 @@ buildscript {
 		maven { url "http://repo.spring.io/release" }
 	}
 	dependencies {
-		classpath "org.springframework.boot:spring-boot-gradle-plugin:2.1.1.RELEASE"
+		classpath "org.springframework.boot:spring-boot-gradle-plugin:2.1.2.RELEASE"
 	}
 }
 
@@ -38,7 +38,7 @@ dependencies {
 	compile("org.springframework.boot:spring-boot-starter-web")
 	compile("org.springframework.boot:spring-boot-starter-actuator")
 	compile("com.fasterxml.jackson.dataformat:jackson-dataformat-xml")
-	
+
 	testCompile 'org.springframework.cloud:spring-cloud-contract-wiremock'
 	testCompile 'org.springframework.cloud:spring-cloud-starter-contract-stub-runner'
 	testCompile "org.springframework.boot:spring-boot-starter-test"

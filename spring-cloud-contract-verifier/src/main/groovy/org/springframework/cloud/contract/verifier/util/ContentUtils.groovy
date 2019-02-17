@@ -1,17 +1,17 @@
 /*
- *  Copyright 2013-2019 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.springframework.cloud.contract.verifier.util
@@ -35,13 +35,21 @@ import org.springframework.cloud.contract.spec.internal.Headers
 import org.springframework.cloud.contract.spec.internal.MatchingStrategy
 import org.springframework.cloud.contract.spec.internal.NamedProperty
 import org.springframework.cloud.contract.spec.internal.OptionalProperty
+import org.xml.sax.helpers.DefaultHandler
 
 import static org.apache.commons.text.StringEscapeUtils.escapeJava
 import static org.apache.commons.text.StringEscapeUtils.escapeJson
 import static org.apache.commons.text.StringEscapeUtils.escapeXml11
 import static org.apache.commons.text.StringEscapeUtils.unescapeXml
+import static org.springframework.cloud.contract.verifier.util.ContentType.JSON
+import static org.springframework.cloud.contract.verifier.util.ContentType.UNKNOWN
+
 /**
  * A utility class that can operate on a message body basing on the provided Content Type.
+ *
+ * @author Marcin Grzejszczak
+ * @author Olga Maciaszek-Sharma
+ * @author Konstantin Shevchuk
  *
  * @since 1.0.0
  */
@@ -58,9 +66,12 @@ class ContentUtils {
 		it instanceof DslProperty ? it.serverValue : it
 	}
 
-	private static final Pattern TEMPORARY_PATTERN_HOLDER = Pattern.compile('.*REGEXP>>(.*)<<.*')
-	private static final Pattern TEMPORARY_EXECUTION_PATTERN_HOLDER = Pattern.compile('["]?EXECUTION>>(.*)<<["]?')
-	private static final Pattern TEMPORARY_OPTIONAL_PATTERN_HOLDER = Pattern.compile('OPTIONAL>>(.*)<<')
+	private static final Pattern TEMPORARY_PATTERN_HOLDER = Pattern.
+			compile('.*REGEXP>>(.*)<<.*')
+	private static final Pattern TEMPORARY_EXECUTION_PATTERN_HOLDER = Pattern.
+			compile('["]?EXECUTION>>(.*)<<["]?')
+	private static final Pattern TEMPORARY_OPTIONAL_PATTERN_HOLDER = Pattern.
+			compile('OPTIONAL>>(.*)<<')
 	private static final String JSON_VALUE_PATTERN_FOR_REGEX = 'REGEXP>>%s<<'
 	private static final String JSON_VALUE_PATTERN_FOR_OPTIONAL = 'OPTIONAL>>%s<<'
 	private static final String JSON_VALUE_PATTERN_FOR_EXECUTION = '"EXECUTION>>%s<<"'
@@ -78,13 +89,13 @@ class ContentUtils {
 	 * @return JSON structure with replaced client / server side parts
 	 */
 	static Object extractValue(GString bodyAsValue, ContentType contentType, Closure valueProvider) {
-		if (bodyAsValue.isEmpty()){
+		if (bodyAsValue.isEmpty()) {
 			return bodyAsValue
 		}
 		if (contentType == ContentType.TEXT || contentType == ContentType.FORM) {
 			return extractValueForText(bodyAsValue, valueProvider)
 		}
-		if (contentType == ContentType.JSON) {
+		if (JSON == contentType) {
 			return extractValueForJSON(bodyAsValue, valueProvider)
 		}
 		if (contentType == ContentType.XML) {
@@ -94,12 +105,14 @@ class ContentUtils {
 		try {
 			log.trace("No content type provided so trying to parse as JSON")
 			return extractValueForJSON(bodyAsValue, valueProvider)
-		} catch(JsonException e) {
+		}
+		catch (JsonException e) {
 			// Not a JSON format
 			log.trace("Failed to parse as JSON - trying to parse as XML", e)
 			try {
 				return extractValueForXML(bodyAsValue, valueProvider)
-			} catch (Exception exception) {
+			}
+			catch (Exception exception) {
 				log.trace("No content type provided and failed to parse as XML - returning the value back to the user", exception)
 				return extractValueForGString(bodyAsValue, valueProvider)
 			}
@@ -109,14 +122,17 @@ class ContentUtils {
 	static ContentType getClientContentType(GString bodyAsValue) {
 		try {
 			extractValueForJSON(bodyAsValue, GET_STUB_SIDE)
-			return ContentType.JSON
-		} catch(JsonException e) {
+			return JSON
+		}
+		catch (JsonException e) {
 			try {
-				new XmlSlurper().parseText(extractValueForXML(bodyAsValue, GET_STUB_SIDE).toString())
+				getXmlSlurperWithDefaultErrorHandler()
+						.parseText(extractValueForXML(bodyAsValue, GET_STUB_SIDE).toString())
 				return ContentType.XML
-			} catch (Exception exception) {
+			}
+			catch (Exception ignored) {
 				extractValueForGString(bodyAsValue, GET_STUB_SIDE)
-				return ContentType.UNKNOWN
+				return UNKNOWN
 			}
 		}
 	}
@@ -124,13 +140,16 @@ class ContentUtils {
 	static ContentType getClientContentType(String bodyAsValue) {
 		try {
 			new JsonSlurper().parseText(bodyAsValue)
-			return ContentType.JSON
-		} catch(JsonException e) {
+			return JSON
+		}
+		catch (JsonException e) {
 			try {
-				new XmlSlurper().parseText(bodyAsValue)
+                getXmlSlurperWithDefaultErrorHandler()
+						.parseText(bodyAsValue)
 				return ContentType.XML
-			} catch (Exception exception) {
-				return ContentType.UNKNOWN
+			}
+			catch (Exception ignored) {
+				return UNKNOWN
 			}
 		}
 	}
@@ -138,16 +157,21 @@ class ContentUtils {
 	static ContentType getClientContentType(Object bodyAsValue) {
 		if (bodyAsValue instanceof GString) {
 			return getClientContentType((GString) bodyAsValue)
-		} else if (bodyAsValue instanceof String) {
+		}
+		else if (bodyAsValue instanceof String) {
 			return getClientContentType((String) bodyAsValue)
-		} else if (bodyAsValue instanceof Map) {
+		}
+		else if (bodyAsValue instanceof Map) {
 			return getClientContentType((Map) bodyAsValue)
-		} else if (bodyAsValue instanceof List) {
+		}
+		else if (bodyAsValue instanceof List) {
 			return getClientContentType((List) bodyAsValue)
-		} else if (bodyAsValue instanceof MatchingStrategy) {
-			return ContentType.UNKNOWN
-		} else if (bodyAsValue instanceof FromFileProperty) {
-			return ContentType.UNKNOWN
+		}
+		else if (bodyAsValue instanceof MatchingStrategy) {
+			return UNKNOWN
+		}
+		else if (bodyAsValue instanceof FromFileProperty) {
+			return UNKNOWN
 		}
 		return tryToGuessContentType(bodyAsValue)
 	}
@@ -158,49 +182,54 @@ class ContentUtils {
 				log.debug("No content type passed, will try to guess the type of payload")
 			}
 			return getClientContentType(JsonOutput.toJson(bodyAsValue))
-		} catch (Exception ex) {
+		}
+		catch (Exception ignored) {
 			if (log.isTraceEnabled()) {
 				log.trace("Failed to assume that body [" + bodyAsValue + "] is json")
 			}
 		}
-		return ContentType.UNKNOWN
+		return UNKNOWN
 	}
 
 	static ContentType getClientContentType(Object bodyAsValue, Headers headers) {
 		ContentType contentType = recognizeContentTypeFromHeader(headers)
-		if (contentType == ContentType.UNKNOWN) {
+		if (contentType == UNKNOWN) {
 			return getClientContentType(bodyAsValue)
 		}
-		return contentType;
+		return contentType
 	}
 
 	static ContentType getClientContentType(Map bodyAsValue) {
 		try {
 			JsonOutput.toJson(bodyAsValue)
-			return ContentType.JSON
-		} catch (Exception ignore) {
-			return ContentType.UNKNOWN
+			return JSON
+		}
+		catch (Exception ignore) {
+			return UNKNOWN
 		}
 	}
 
 	static ContentType getClientContentType(List bodyAsValue) {
 		try {
 			JsonOutput.toJson(bodyAsValue)
-			return ContentType.JSON
-		} catch (Exception ignore) {
-			return ContentType.UNKNOWN
+			return JSON
+		}
+		catch (Exception ignore) {
+			return UNKNOWN
 		}
 	}
 
 	static GStringImpl extractValueForGString(GString bodyAsValue, Closure valueProvider) {
 		return new GStringImpl(
-				bodyAsValue.values.collect { it instanceof DslProperty ? valueProvider(it) : it } as String[],
+				bodyAsValue.values.collect {
+					it instanceof DslProperty ? valueProvider(it) : it
+				} as String[],
 				bodyAsValue.strings.clone() as String[]
 		)
 	}
 
 	static Object extractValue(GString bodyAsValue, Closure valueProvider) {
-		return extractValue(bodyAsValue, ContentType.UNKNOWN, valueProvider)
+		return extractValue(bodyAsValue, UNKNOWN, valueProvider)
 	}
 
 	private static String extractValueForText(GString bodyAsValue, Closure valueProvider) {
@@ -213,31 +242,38 @@ class ContentUtils {
 
 	private static Object extractValueForJSON(GString bodyAsValue, Closure valueProvider) {
 		GString transformedString = new GStringImpl(
-				bodyAsValue.values.collect { transformJSONStringValue(it, valueProvider) } as String[],
+				bodyAsValue.values.
+						collect { transformJSONStringValue(it, valueProvider) } as String[],
 				bodyAsValue.strings.clone() as String[]
 		)
-		def parsedJson = new JsonSlurper().parseText(transformedString.toString().replace('\\', '\\\\'))
+		def parsedJson = new JsonSlurper().
+				parseText(transformedString.toString().replace('\\', '\\\\'))
 		return convertAllTemporaryRegexPlaceholdersBackToPatterns(parsedJson)
 	}
 
 	private static GStringImpl extractValueForXML(GString bodyAsValue, Closure valueProvider) {
 		GStringImpl impl = new GStringImpl(
-				bodyAsValue.values.collect { transformXMLStringValue(it, valueProvider) } as String[],
+				bodyAsValue.values.
+						collect { transformXMLStringValue(it, valueProvider) } as String[],
 				bodyAsValue.strings.clone() as String[]
 		)
 		// try to convert it to XML
-		new XmlSlurper().parseText(impl.toString())
+		getXmlSlurperWithDefaultErrorHandler()
+				.parseText(impl.toString())
 		return impl
 	}
 
 	protected static Object transformJSONStringValue(Object obj, Closure valueProvider) {
 		if (obj instanceof DslProperty) {
 			return transformJSONStringValue((DslProperty) obj, valueProvider)
-		} else if (obj instanceof Pattern) {
+		}
+		else if (obj instanceof Pattern) {
 			return transformJSONStringValue((Pattern) obj, valueProvider)
-		} else if (obj instanceof OptionalProperty) {
+		}
+		else if (obj instanceof OptionalProperty) {
 			return transformJSONStringValue((OptionalProperty) obj, valueProvider)
-		} else if (obj instanceof ExecutionProperty) {
+		}
+		else if (obj instanceof ExecutionProperty) {
 			return transformJSONStringValue((ExecutionProperty) obj, valueProvider)
 		}
 		return obj
@@ -270,10 +306,11 @@ class ContentUtils {
 		return transformXMLStringValue(valueProvider(dslProperty), valueProvider)
 	}
 
-	protected static Object convertDslPropsToTemporaryRegexPatterns(parsedJson) {
+	protected static Object convertDslPropsToTemporaryRegexPatterns(Object parsedJson,
+			Closure parsingClosure = MapConverter.JSON_PARSING_CLOSURE) {
 		MapConverter.transformValues(parsedJson, { Object value ->
 			return transformJSONStringValue(value, GET_TEST_SIDE)
-		})
+		}, parsingClosure)
 	}
 
 	private static Object convertAllTemporaryRegexPlaceholdersBackToPatterns(parsedJson) {
@@ -319,7 +356,8 @@ class ContentUtils {
 		if (matcher.matches()) {
 			return Pattern.compile(patternFromMatchingGroup(matcher))
 		}
-		Matcher executionMatcher = TEMPORARY_EXECUTION_PATTERN_HOLDER.matcher(string.trim())
+		Matcher executionMatcher = TEMPORARY_EXECUTION_PATTERN_HOLDER.
+				matcher(string.trim())
 		if (executionMatcher.matches()) {
 			return new ExecutionProperty(patternFromMatchingGroup(executionMatcher))
 		}
@@ -337,11 +375,13 @@ class ContentUtils {
 	}
 
 	static ContentType recognizeContentTypeFromHeader(Headers headers, Closure<Object> closure) {
-		Header header = headers?.entries?.find { it.name == "Content-Type" ||
-				it.name == "contentType" }
+		Header header = headers?.entries?.find {
+			it.name == "Content-Type" ||
+					it.name == "contentType"
+		}
 		String content = closure(header)?.toString()
 		if (content?.contains("json")) {
-			return ContentType.JSON
+			return JSON
 		}
 		if (content?.contains("xml")) {
 			return ContentType.XML
@@ -352,7 +392,7 @@ class ContentUtils {
 		if (content?.contains("form-urlencoded")) {
 			return ContentType.FORM
 		}
-		return ContentType.UNKNOWN
+		return UNKNOWN
 	}
 
 	static ContentType recognizeContentTypeFromHeader(Headers headers) {
@@ -365,42 +405,46 @@ class ContentUtils {
 
 	static MatchingStrategy.Type getEqualsTypeFromContentType(ContentType contentType) {
 		switch (contentType) {
-			case ContentType.JSON:
-				return MatchingStrategy.Type.EQUAL_TO_JSON
-			case ContentType.XML:
-				return MatchingStrategy.Type.EQUAL_TO_XML
+		case JSON:
+			return MatchingStrategy.Type.EQUAL_TO_JSON
+		case ContentType.XML:
+			return MatchingStrategy.Type.EQUAL_TO_XML
 		}
 		return MatchingStrategy.Type.EQUAL_TO
 	}
 
 	static ContentType recognizeContentTypeFromContent(GString gstring) {
 		if (isJsonType(gstring)) {
-			return ContentType.JSON
+			return JSON
 		}
 		if (isXmlType(gstring)) {
 			return ContentType.XML
 		}
-		return ContentType.UNKNOWN
+		return UNKNOWN
 	}
 
 	static ContentType recognizeContentTypeFromContent(Map jsonMap) {
-		return ContentType.JSON
+		return JSON
 	}
 
 	static ContentType recognizeContentTypeFromContent(byte[] bytes) {
-		return ContentType.UNKNOWN
+		return UNKNOWN
 	}
 
 	static ContentType recognizeContentTypeFromContent(List jsonList) {
-		return ContentType.JSON
+		return JSON
 	}
 
 	static ContentType recognizeContentTypeFromContent(String string) {
 		try {
 			new JsonSlurper().parseText(string)
-			return ContentType.JSON
-		} catch (Exception e){
-			return ContentType.UNKNOWN
+			return JSON
+		}
+		catch (Exception ignored) {
+			if (isXmlType("$string")) {
+				return ContentType.XML
+			}
+			return UNKNOWN
 		}
 	}
 
@@ -411,18 +455,23 @@ class ContentUtils {
 	static ContentType recognizeContentTypeFromContent(Object object) {
 		if (object instanceof GString) {
 			return recognizeContentTypeFromContent((GString) object)
-		} else if (object instanceof Map) {
+		}
+		else if (object instanceof Map) {
 			return recognizeContentTypeFromContent((Map) object)
-		} else if (object instanceof byte[]) {
+		}
+		else if (object instanceof byte[]) {
 			return recognizeContentTypeFromContent((byte[]) object)
-		} else if (object instanceof List) {
+		}
+		else if (object instanceof List) {
 			return recognizeContentTypeFromContent((List) object)
-		} else if (object instanceof String) {
+		}
+		else if (object instanceof String) {
 			return recognizeContentTypeFromContent((String) object)
-		} else if (object instanceof Number) {
+		}
+		else if (object instanceof Number) {
 			return recognizeContentTypeFromContent((Number) object)
 		}
-		return ContentType.UNKNOWN
+		return UNKNOWN
 	}
 
 	static boolean isJsonType(GString gstring) {
@@ -431,30 +480,35 @@ class ContentUtils {
 		}
 		GString stringWithoutValues = new GStringImpl(
 				gstring.values.collect({
-					it instanceof String || it instanceof GString ? it.toString() : escapeJson(it.toString())
+					it instanceof String || it instanceof GString ? it.toString() :
+							escapeJson(it.toString())
 				}) as Object[],
 				gstring.strings.clone() as String[]
 		)
 		try {
 			new JsonSlurper().parseText(stringWithoutValues.toString())
 			return true
-		} catch (JsonException e) {
+		}
+		catch (JsonException e) {
 			// Not JSON
 		}
 		return false
 	}
 
-	static boolean isXmlType(GString gstring) {
+	static boolean isXmlType(GString gString) {
 		GString stringWithoutValues = new GStringImpl(
-				gstring.values.collect({
-					it instanceof String || it instanceof GString ? it.toString() : escapeXml11(it.toString())
+				gString.values.collect({
+					it instanceof String || it instanceof GString ? it.toString() :
+							escapeXml11(it.toString())
 				}) as Object[],
-				gstring.strings.clone() as String[]
+				gString.strings.clone() as String[]
 		)
 		try {
-			new XmlSlurper().parseText(stringWithoutValues.toString())
+			getXmlSlurperWithDefaultErrorHandler()
+					.parseText(stringWithoutValues.toString())
 			return true
-		} catch (Exception e) {
+		}
+		catch (Exception ignored) {
 			// Not XML
 		}
 		return false
@@ -462,29 +516,37 @@ class ContentUtils {
 
 	static ContentType recognizeContentTypeFromMatchingStrategy(MatchingStrategy.Type type) {
 		switch (type) {
-			case MatchingStrategy.Type.EQUAL_TO_XML:
-				return ContentType.XML
-			case MatchingStrategy.Type.EQUAL_TO_JSON:
-				return ContentType.JSON
+		case MatchingStrategy.Type.EQUAL_TO_XML:
+			return ContentType.XML
+		case MatchingStrategy.Type.EQUAL_TO_JSON:
+			return JSON
 		}
-		return ContentType.UNKNOWN
+		return UNKNOWN
 	}
 
 	static String getGroovyMultipartFileParameterContent(String propertyName, NamedProperty propertyValue,
 			Closure<String> bytesFromFile) {
 		return "'$propertyName', ${namedPropertyName(propertyValue, "'")}, " +
-				"${groovyNamedPropertyValue(propertyValue, "'", bytesFromFile)}" + namedContentTypeNameIfPresent(propertyValue, "'")
+				"${groovyNamedPropertyValue(propertyValue, "'", bytesFromFile)}" +
+				namedContentTypeNameIfPresent(propertyValue, "'")
 	}
 
 	static String getJavaMultipartFileParameterContent(String propertyName, NamedProperty propertyValue,
 			Closure<String> bytesFromFile) {
-		return """"${escapeJava(propertyName)}", ${namedPropertyName(propertyValue, '"')}, """ +
-				"""${javaNamedPropertyValue(propertyValue, '"', bytesFromFile)}${namedContentTypeNameIfPresent(propertyValue, '"')}"""
+		return """"${escapeJava(propertyName)}", ${
+			namedPropertyName(propertyValue, '"')
+		}, """ +
+				"""${
+					javaNamedPropertyValue(propertyValue, '"', bytesFromFile)
+				}${
+					namedContentTypeNameIfPresent(propertyValue, '"')
+				}"""
 	}
 
 	static String namedPropertyName(NamedProperty property, String quote) {
 		return property.name.serverValue instanceof ExecutionProperty ?
-				property.name.serverValue.toString() : quote + escapeJava(property.name.serverValue.toString()) + quote
+				property.name.serverValue.toString() : quote +
+				escapeJava(property.name.serverValue.toString()) + quote
 	}
 
 	static String namedContentTypeNameIfPresent(NamedProperty property, String quote) {
@@ -492,40 +554,65 @@ class ContentUtils {
 			return ""
 		}
 		String contentType = property.contentType.serverValue instanceof ExecutionProperty ?
-				property.contentType.serverValue.toString() : quote + escapeJava(property.contentType.serverValue.toString()) + quote
+				property.contentType.serverValue.toString() : quote +
+				escapeJava(property.contentType.serverValue.toString()) + quote
 		return ", " + contentType
 	}
 
 	static String groovyNamedPropertyValue(NamedProperty property, String quote, Closure<String> bytesFromFile) {
 		if (property.value.serverValue instanceof ExecutionProperty) {
 			return property.value.serverValue.toString()
-		} else if (property.value.serverValue instanceof byte[]) {
+		}
+		else if (property.value.serverValue instanceof byte[]) {
 			byte[] bytes = (byte[]) property.value.serverValue
 			return "[" + bytes.collect { it }.join(", ") + "] as byte[]"
-		} else if (property.value.serverValue instanceof FromFileProperty) {
+		}
+		else if (property.value.serverValue instanceof FromFileProperty) {
 			FromFileProperty fromFileProperty = (FromFileProperty) property.value.serverValue
 			if (fromFileProperty.isByte()) {
 				return bytesFromFile(fromFileProperty)
 			}
 			return "[" + fromFileProperty.asBytes().collect { it }.join(", ") + "] as byte[]"
 		}
-		return  quote + escapeJava(property.value.serverValue.toString()) + quote + ".bytes"
+		return quote +
+				escapeJava(property.value.serverValue.toString()) + quote + ".bytes"
 	}
 
 	static String javaNamedPropertyValue(NamedProperty property, String quote, Closure<String> bytesFromFile) {
 		if (property.value.serverValue instanceof ExecutionProperty) {
 			return property.value.serverValue.toString()
-		} else if (property.value.serverValue instanceof byte[]) {
+		}
+		else if (property.value.serverValue instanceof byte[]) {
 			byte[] bytes = (byte[]) property.value.serverValue
 			return "new byte[] {" + bytes.collect { it }.join(", ") + "}"
-		} else if (property.value.serverValue instanceof FromFileProperty) {
+		}
+		else if (property.value.serverValue instanceof FromFileProperty) {
 			FromFileProperty fromFileProperty = (FromFileProperty) property.value.serverValue
 			if (fromFileProperty.isByte()) {
 				return bytesFromFile(fromFileProperty)
 			}
 			return "new byte[] {" + fromFileProperty.asBytes().collect { it }.join(", ") + "}"
 		}
-		return  quote + escapeJava(property.value.serverValue.toString()) + quote + ".getBytes()"
+		return quote + escapeJava(property.value.serverValue.toString()) + quote + ".getBytes()"
 	}
+
+	static ContentType evaluateContentType(Headers contractHeaders, Object body) {
+		ContentType contentType = recognizeContentTypeFromHeader(contractHeaders)
+		if (UNKNOWN == contentType) {
+			contentType = recognizeContentTypeFromContent(body)
+		}
+		return contentType
+	}
+
+	/**
+	 * Creates new {@link XmlSlurper} with default error handler.
+	 *
+	 * @return XmlSlurper with default error handler
+	 */
+	static XmlSlurper getXmlSlurperWithDefaultErrorHandler() {
+		XmlSlurper xmlSlurper = new XmlSlurper()
+		xmlSlurper.setErrorHandler(new DefaultHandler())
+		return xmlSlurper
+    }
 
 }

@@ -1,18 +1,17 @@
 /*
- * Copyright 2013-2018 the original author or authors.
+ * Copyright 2013-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 package org.springframework.cloud.contract.wiremock;
@@ -53,15 +52,19 @@ import org.springframework.util.StringUtils;
  * {@link WireMockSpring#options()}) to your test context.
  *
  * @author Dave Syer
+ * @author Matt Garner
  *
  */
 @Configuration
 @EnableConfigurationProperties(WireMockProperties.class)
 public class WireMockConfiguration implements SmartLifecycle {
 
+	static final String WIREMOCK_SERVER_BEAN_NAME = "wireMockServer";
+
 	private static final Log log = LogFactory.getLog(WireMockConfiguration.class);
 
-	static final String WIREMOCK_SERVER_BEAN_NAME = "wireMockServer";
+	@Autowired
+	WireMockProperties wireMock;
 
 	private volatile boolean running;
 
@@ -77,15 +80,13 @@ public class WireMockConfiguration implements SmartLifecycle {
 	private DefaultListableBeanFactory beanFactory;
 
 	@Autowired
-	WireMockProperties wireMock;
-
-	@Autowired
 	private ResourceLoader resourceLoader;
 
 	@PostConstruct
 	public void init() throws IOException {
 		if (this.options == null) {
-			com.github.tomakehurst.wiremock.core.WireMockConfiguration factory = WireMockSpring.options();
+			com.github.tomakehurst.wiremock.core.WireMockConfiguration factory = WireMockSpring
+					.options();
 			if (this.wireMock.getServer().getPort() != 8080) {
 				factory.port(this.wireMock.getServer().getPort());
 			}
@@ -101,9 +102,9 @@ public class WireMockConfiguration implements SmartLifecycle {
 		}
 		if (this.server == null) {
 			if (log.isDebugEnabled()) {
-				log.debug("Creating a new server at "
-						+ "http port [" + this.wireMock.getServer().getPort() + "] and "
-						+ "https port [" + this.wireMock.getServer().getHttpsPort() + "]");
+				log.debug("Creating a new server at " + "http port ["
+						+ this.wireMock.getServer().getPort() + "] and " + "https port ["
+						+ this.wireMock.getServer().getHttpsPort() + "]");
 			}
 			this.server = new WireMockServer(this.options);
 		}
@@ -192,7 +193,8 @@ public class WireMockConfiguration implements SmartLifecycle {
 				log.debug("Stopped WireMock instance");
 			}
 			this.beanFactory.destroySingleton(WIREMOCK_SERVER_BEAN_NAME);
-		} else if (log.isDebugEnabled()) {
+		}
+		else if (log.isDebugEnabled()) {
 			log.debug("Server already stopped");
 		}
 	}
@@ -217,6 +219,7 @@ public class WireMockConfiguration implements SmartLifecycle {
 		stop();
 		callback.run();
 	}
+
 }
 
 @ConfigurationProperties("wiremock")
@@ -252,6 +255,10 @@ class WireMockProperties {
 
 		private String[] files;
 
+		private boolean portDynamic = false;
+
+		private boolean httpsPortDynamic = true;
+
 		public int getPort() {
 			return this.port;
 		}
@@ -282,6 +289,22 @@ class WireMockProperties {
 
 		public void setFiles(String[] files) {
 			this.files = files;
+		}
+
+		public boolean isPortDynamic() {
+			return portDynamic;
+		}
+
+		public void setPortDynamic(boolean portDynamic) {
+			this.portDynamic = portDynamic;
+		}
+
+		public boolean isHttpsPortDynamic() {
+			return httpsPortDynamic;
+		}
+
+		public void setHttpsPortDynamic(boolean httpsPortDynamic) {
+			this.httpsPortDynamic = httpsPortDynamic;
 		}
 
 	}

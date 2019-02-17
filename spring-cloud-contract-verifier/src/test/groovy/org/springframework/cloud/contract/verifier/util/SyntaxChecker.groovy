@@ -1,4 +1,29 @@
+/*
+ * Copyright 2013-2019 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.springframework.cloud.contract.verifier.util
+
+import java.lang.reflect.Method
+
+import javax.inject.Inject
+import javax.ws.rs.client.Entity
+import javax.ws.rs.client.WebTarget
+import javax.ws.rs.core.Response
+import javax.xml.parsers.DocumentBuilder
+import javax.xml.parsers.DocumentBuilderFactory
 
 import com.jayway.jsonpath.DocumentContext
 import com.jayway.jsonpath.JsonPath
@@ -16,6 +41,9 @@ import org.codehaus.groovy.control.customizers.ImportCustomizer
 import org.junit.Rule
 import org.junit.Test
 import org.mdkt.compiler.InMemoryJavaCompiler
+import org.w3c.dom.Document
+import org.xml.sax.InputSource
+
 import org.springframework.cloud.contract.spec.Contract
 import org.springframework.cloud.contract.verifier.assertion.SpringCloudContractAssertions
 import org.springframework.cloud.contract.verifier.messaging.internal.ContractVerifierMessage
@@ -24,19 +52,12 @@ import org.springframework.cloud.contract.verifier.messaging.internal.ContractVe
 import org.springframework.cloud.contract.verifier.messaging.util.ContractVerifierMessagingUtil
 import org.springframework.util.ReflectionUtils
 
-import javax.inject.Inject
-import javax.ws.rs.client.Entity
-import javax.ws.rs.client.WebTarget
-import javax.ws.rs.core.Response
-import java.lang.reflect.Method
-
 /**
  * checking the syntax of produced scripts
  */
 @CompileStatic
 class SyntaxChecker {
 
-	WebTarget webTarget
 	Entity entity
 
 	private static final String[] DEFAULT_IMPORTS = [
@@ -55,7 +76,12 @@ class SyntaxChecker {
 			WebTarget.name,
 			Response.name,
 			WebTestClientRequestSpecification.name,
-			WebTestClientResponse.name
+			WebTestClientResponse.name,
+			DocumentBuilder.name,
+			DocumentBuilderFactory.name,
+			Document.name,
+			InputSource.name,
+			StringReader.name
 	]
 
 	private static final String DEFAULT_IMPORTS_AS_STRING = DEFAULT_IMPORTS.collect {
@@ -67,25 +93,31 @@ class SyntaxChecker {
 			"${RestAssuredMockMvc.name}.when",
 			"${RestAssured.name}.*",
 			"${Entity.name}.*",
-			"${ContractVerifierUtil.name}.fileToBytes",
+			"${ContractVerifierUtil.name}.*",
 			"${ContractVerifierMessagingUtil.name}.headers",
 			"${JsonAssertion.name}.assertThatJson",
-			"${SpringCloudContractAssertions.name}.assertThat"
-	].collect { "import static ${it};"}.join("\n")
+			"${SpringCloudContractAssertions.name}.assertThat",
+	].collect { "import static ${it};" }.join("\n")
 
 	private static final String WEB_TEST_CLIENT_STATIC_IMPORTS = [
 			"${RestAssuredWebTestClient.name}.*",
 			"${Entity.name}.*",
-			"${ContractVerifierUtil.name}.fileToBytes",
+			"${ContractVerifierUtil.name}.*",
 			"${ContractVerifierMessagingUtil.name}.headers",
 			"${JsonAssertion.name}.assertThatJson",
 			"${SpringCloudContractAssertions.name}.assertThat"
 	].collect { "import static ${it};" }.join("\n")
 
+	private static final String dummyMethod = '''
+private void test(String test) {
+\t\tassertThat(test).isEqualTo("123");
+\t}'''
+
 	static void tryToCompile(String builderName, String test) {
 		if (builderName.toLowerCase().contains("spock")) {
 			tryToCompileGroovy(builderName, test)
-		} else {
+		}
+		else {
 			tryToCompileJava(builderName, test)
 		}
 	}
@@ -94,7 +126,8 @@ class SyntaxChecker {
 		if (builderName.toLowerCase().contains("spock")) {
 			Script script = tryToCompileGroovy(builderName, test)
 			script.run()
-		} else {
+		}
+		else {
 			Class clazz = tryToCompileJava(builderName, test)
 			Method method = ReflectionUtils.findMethod(clazz, "method")
 			method.invoke(clazz.newInstance())
@@ -105,7 +138,8 @@ class SyntaxChecker {
 	static void tryToCompileWithoutCompileStatic(String builderName, String test) {
 		if (builderName.toLowerCase().contains("spock")) {
 			tryToCompileGroovy(builderName, test, false)
-		} else {
+		}
+		else {
 			tryToCompileJava(builderName, test)
 		}
 	}
@@ -125,6 +159,7 @@ class SyntaxChecker {
 		sourceCode.append("WebTarget webTarget")
 		sourceCode.append("\n")
 		sourceCode.append(test)
+		sourceCode.append(dummyMethod)
 		return new GroovyShell(SyntaxChecker.classLoader, configuration).parse(sourceCode.toString())
 	}
 
@@ -150,9 +185,10 @@ class SyntaxChecker {
 		sourceCode.append("\n")
 		sourceCode.append("   WebTarget webTarget;")
 		sourceCode.append("\n")
-		sourceCode.append("   public void method() {\n")
+		sourceCode.append("   public void method() throws Exception {\n")
 		sourceCode.append("   ${test}\n")
 		sourceCode.append("   }\n")
+		sourceCode.append(dummyMethod)
 		sourceCode.append("}")
 		return InMemoryJavaCompiler.compile(fqnClassName, sourceCode.toString())
 	}
