@@ -38,10 +38,11 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
+			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>s
+			<artifactId>spring-boot-starter-test</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
@@ -73,7 +74,7 @@
 				<configuration>
 					<failIfNoTests>false</failIfNoTests>
 				</configuration>
-s			</plugin>
+			</plugin>
 		</plugins>
 	</build>
 </project>

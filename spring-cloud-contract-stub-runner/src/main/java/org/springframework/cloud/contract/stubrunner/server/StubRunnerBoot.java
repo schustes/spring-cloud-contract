@@ -27,7 +27,11 @@ import org.springframework.cloud.stream.config.BindingServiceConfiguration;
 @SpringBootApplication
 @EnableStubRunnerServer
 @AutoConfigureBefore(BindingServiceConfiguration.class)
-public class StubRunnerBoot {
+public final class StubRunnerBoot {
+
+	private StubRunnerBoot() {
+		// empty
+	}
 
 	public static void main(String[] args) {
 		SpringApplication.run(StubRunnerBoot.class, args);

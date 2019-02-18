@@ -16,16 +16,15 @@
 
 package org.springframework.cloud.contract.stubrunner;
 
-import java.io.IOException;
-import java.util.Arrays;
-
 import joptsimple.ArgumentAcceptingOptionSpec;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
 import org.springframework.cloud.contract.stubrunner.spring.StubRunnerProperties;
+
+import java.io.IOException;
+import java.util.Arrays;
 
 /**
  * Class to run stub runner as a standalone process.
@@ -34,7 +33,7 @@ import org.springframework.cloud.contract.stubrunner.spring.StubRunnerProperties
  * @deprecated - use Stub Runner Boot server
  */
 @Deprecated
-public class StubRunnerMain {
+public final class StubRunnerMain {
 
 	private static final Log log = LogFactory.getLog(StubRunnerMain.class);
 

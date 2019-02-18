@@ -24,6 +24,9 @@
 	<inceptionYear>2016</inceptionYear>
 
 	<properties>
+		<activemq.version>5.12.1</activemq.version>
+		<camel.version>2.22.1</camel.version>
+		<checkstyle.version>2.17</checkstyle.version>
 		<pact.version>3.5.13</pact.version>
 		<jsch-agent.version>0.0.9</jsch-agent.version>
 		<spring-cloud-build.version>2.1.3.BUILD-SNAPSHOT</spring-cloud-build.version>
@@ -33,6 +36,19 @@
 		<spring-cloud-netflix.version>2.1.1.BUILD-SNAPSHOT</spring-cloud-netflix.version>
 		<spring-cloud-consul.version>2.1.1.BUILD-SNAPSHOT</spring-cloud-consul.version>
 		<spring-cloud-commons.version>2.1.1.BUILD-SNAPSHOT</spring-cloud-commons.version>
+		<jopt-simple.version>5.0.3</jopt-simple.version>
+		<cglib.version>3.2.9</cglib.version>
+		<spock-spring.version>1.0-groovy-2.4</spock-spring.version>
+		<spock-global-unroll.version>0.5.1</spock-global-unroll.version>
+		<hoverfly-junit.version>0.2.2</hoverfly-junit.version>
+		<commons-text.version>1.6</commons-text.version>
+		<handlebars.version>4.1.2</handlebars.version>
+		<jgit.version>5.1.3.201810200350-r</jgit.version>
+		<javax-inject.version>1</javax-inject.version>
+		<!-- We need to have compatibility with Gradle -->
+		<groovy.version>2.4.15</groovy.version>
+		<!-- For Takari plugin -->
+		<maven.version>3.2.1</maven.version>
 		<aether.version>1.1.0</aether.version>
 		<xpath2.processor.version>2.1.100</xpath2.processor.version>
 		<xerces.version>2.11.0</xerces.version>
@@ -67,6 +83,51 @@
 				<version>${spring-cloud-commons.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.camel</groupId>
+				<artifactId>camel-spring-boot-starter</artifactId>
+				<version>${camel.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.camel</groupId>
+				<artifactId>camel-spring</artifactId>
+				<version>${camel.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.camel</groupId>
+				<artifactId>camel-spring-boot</artifactId>
+				<version>${camel.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.camel</groupId>
+				<artifactId>camel-core</artifactId>
+				<version>${camel.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.camel</groupId>
+				<artifactId>camel-kafka</artifactId>
+				<version>${camel.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.camel</groupId>
+				<artifactId>camel-jackson</artifactId>
+				<version>${camel.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.camel</groupId>
+				<artifactId>camel-jms</artifactId>
+				<version>${camel.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.activemq</groupId>
+				<artifactId>activemq-camel</artifactId>
+				<version>${activemq.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.activemq</groupId>
+				<artifactId>activemq-pool</artifactId>
+				<version>${activemq.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>net.sf.jopt-simple</groupId>
@@ -416,9 +477,9 @@
 
 	<distributionManagement>
 		<repository>
-			<id>ems</id>
-			<name>EmsRepo</name>
-			<url>http://nexus.measurementsolutions.de/content/repositories/plugins </url>
+			<id>abi</id>
+			<name>Abi artifactory</name>
+			<url>https://artifactory.tools.msi.audi.com/artifactory/ecacp-release/</url>
 		</repository>
 	</distributionManagement>
 
@@ -472,13 +533,15 @@
 				<groupId>io.spring.javaformat</groupId>
 				<artifactId>spring-javaformat-maven-plugin</artifactId>
 			</plugin>
+<!--
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-checkstyle-plugin</artifactId>
 			</plugin>
+-->
 		</plugins>
 	</build>
-
+<!--
 	<reporting>
 		<plugins>
 			<plugin>
@@ -487,7 +550,7 @@
 			</plugin>
 		</plugins>
 	</reporting>
-
+-->
 	<profiles>
 		<profile>
 			<id>spring</id>
